@@ -1,10 +1,20 @@
-FROM ruby:3.1
+FROM ruby:3.1-alpine
 
-RUN mkdir /web_app
-WORKDIR /web_app
-COPY Gemfile /web_app/Gemfile
-COPY Gemfile.lock /web_app/Gemfile.lock
-RUN bundle install
+# libxml2-dev and libxslt-dev for nokogiri compiling
+RUN apk add --update --no-cache \
+  build-base \
+  tzdata \
+  libxml2-dev libxslt-dev
+
+ARG app=/web_app
+WORKDIR $app
+
+COPY Gemfile Gemfile.lock .
+
+RUN bundle config set --local force_ruby_platform true && \
+    bundle config set --local build.nokogiri "--use-system-libraries" && \
+    bundle install --jobs 4 --retry 3
+
 COPY . /web_app
 
 ENV RAILS_SERVE_STATIC_FILES=true
