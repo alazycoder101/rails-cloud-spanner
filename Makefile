@@ -54,5 +54,5 @@ create_instance_production:
 # run once only! image is gcp default.
 create_migrate_production_job:
 	gcloud beta run jobs create rails-spanner-migrate \
-	--image us-docker.pkg.dev/cloudrun/container/job:latest\
+	--image us-docker.pkg.dev/cloudrun/container/job:latest \
 	--region ${REGION}
