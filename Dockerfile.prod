@@ -1,0 +1,49 @@
+ARG RUBY_VERSION=3.1
+ARG BASE_IMAGE=ruby:${RUBY_VERSION}-alpine
+ARG CACHE_IMAGE=$BASE_IMAGE
+
+FROM $BASE_IMAGE as base
+FROM $CACHE_IMAGE as cache
+ARG app=/web_app
+RUN mkdir -p $app/vendor
+
+FROM base as builder
+# libxml2-dev and libxslt-dev for nokogiri compiling
+RUN apk add --update --no-cache \
+  build-base \
+  tzdata \
+  libxml2-dev libxslt-dev
+
+ARG app=/web_app
+WORKDIR $app
+COPY Gemfile Gemfile.lock ./
+COPY --from=cache $app/vendor $app/vendor
+
+RUN bundle config set deployment 'true' && \
+    bundle config set without 'development test' && \
+    bundle config set --local build.nokogiri "--use-system-libraries" && \
+    bundle config set --local build.nokogiri "--use-system-libraries" && \
+    bundle install --jobs 4 --retry 3 && \
+    bundle clean
+
+COPY . ./
+
+ENV RAILS_SERVE_STATIC_FILES=true
+RUN bundle exec rake assets:precompile
+
+#--------------------------------
+FROM base as prod
+ARG app=/web_app
+
+WORKDIR $app
+
+COPY --chown=$user --from=builder $app $pp
+
+ENV RAILS_ROOT=$app \
+    RAILS_ENV=${RAILS_ENV:-production} \
+    RACK_ENV=${RAILS_ENV:-production}
+
+ARG PORT=3000
+
+EXPOSE $PORT
+CMD ["bundle", "exec", "rails", "s", "-b", "tcp://0.0.0.0:$PORT"]

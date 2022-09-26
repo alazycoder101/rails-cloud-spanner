@@ -1,12 +1,36 @@
 steps:
-  - id: "build image"
+  - id: "build builder image"
     name: "gcr.io/cloud-builders/docker"
     entrypoint: 'bash'
-    args: ["-c", "docker build  -t gcr.io/${PROJECT_ID}/rails-cloud-spanner . "]
+    args:
+    - '-c'
+    - |
+      if docker pull gcr.io/${PROJECT_ID}/rails-cloud-spanner:builder
+      then
+        docker tag gcr.io/${PROJECT_ID}/rails-cloud-spanner:builder temp
+        docker build --target builder --build-arg CACHE_IMAGE=temp -f Dockerfile.prod -t gcr.io/${PROJECT_ID}/rails-cloud-spanner:builder .
+      else
+        echo "no cache"
+        docker build --target builder -f Dockerfile.prod -t gcr.io/${PROJECT_ID}/rails-cloud-spanner:builder .
+        docker tag gcr.io/${PROJECT_ID}/rails-cloud-spanner:builder temp
+      fi
 
-  - id: "push image"
+  - id: "build prod image"
+    name: "gcr.io/cloud-builders/docker"
+    entrypoint: 'bash'
+    args:
+    - '-c'
+    - |
+      docker build --target prod --build-arg CACHE_IMAGE=temp -f Dockerfile.prod -t gcr.io/${PROJECT_ID}/rails-cloud-spanner .
+
+  - id: "push builder image"
+    name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/${PROJECT_ID}/rails-cloud-spanner:builder"]
+
+  - id: "push prod image"
     name: "gcr.io/cloud-builders/docker"
     args: ["push", "gcr.io/${PROJECT_ID}/rails-cloud-spanner"]
 
 images:
+  - "gcr.io/${PROJECT_ID}/rails-cloud-spanner:builder"
   - "gcr.io/${PROJECT_ID}/rails-cloud-spanner"
