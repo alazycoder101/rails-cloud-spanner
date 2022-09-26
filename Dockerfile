@@ -19,6 +19,6 @@ COPY . /web_app
 
 ENV RAILS_SERVE_STATIC_FILES=true
 RUN bundle exec rake assets:precompile
-
-EXPOSE 3000
-CMD ["bundle", "exec", "rails", "s", "-b", "0.0.0.0"]
+ARG PORT=3000
+EXPOSE $PORT
+CMD ["bundle", "exec", "rails", "s", "-b", "tcp://0.0.0.0:$PORT"]
