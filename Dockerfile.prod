@@ -37,7 +37,7 @@ ARG app=/web_app
 
 WORKDIR $app
 
-COPY --chown=$user --from=builder $app $pp
+COPY --chown=$user --from=builder $app $app
 
 ENV RAILS_ROOT=$app \
     RAILS_ENV=${RAILS_ENV:-production} \
