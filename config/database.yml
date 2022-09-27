@@ -14,8 +14,8 @@ default: &default
 development:
   <<: *default
   emulator_host: <%= ENV.fetch("SPANNER_HOST") { "" } %>
-  database: spanner_test_dev
+  database: <%= ENV.fetch("DATABASE_NAME") { "spanner_test_dev" } %>
 
 production:
   <<: *default
-  database: spanner_test
+  database: <%= ENV.fetch("DATABASE_NAME") { "spanner_test" } %>
