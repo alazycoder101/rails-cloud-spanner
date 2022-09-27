@@ -46,7 +46,7 @@ RUN find vendor -name '*.o' -o -name '*.h' -o -name '*.h' -o -name '*.c' \
 FROM base as prod
 
 # xz-libs for nokogiri, libc6-compat for grpc
-RUN apk add --update --no-cache tzdata libc6-compat xz-libs
+RUN apk add --update --no-cache tzdata gcompat xz-libs
 
 ARG app=/web_app
 WORKDIR $app
