@@ -41,6 +41,8 @@ RUN sed -i.bak 's/config.require_master_key = true/config.require_master_key = f
 #--------------------------------
 FROM base as prod
 
+RUN apk add --update --no-cache tzdata
+
 ARG app=/web_app
 WORKDIR $app
 
