@@ -38,11 +38,9 @@ RUN sed -i.bak 's/config.require_master_key = true/config.require_master_key = f
     SECRET_KEY_BASE=1 bundle exec rake assets:precompile && \
     mv config/environments/production.rb.bak config/environments/production.rb
 
-# cleanup huge files from grpc for Ruby 3.1
-# https://github.com/grpc/grpc/issues/28627
-RUN grpc_path="$(bundle show --paths grpc)/src/ruby/ext/grpc" \
-    make -C $grpc_path clean \
-    rm -rf "$grpc_path"/{libs,objs}
+# cleanup
+RUN find vendor -name '*.o' -o -name '*.h' -o -name '*.h' -o -name '*.c' \
+    -o -name '*.cc' | xargs rm -rf
 
 #--------------------------------
 FROM base as prod
